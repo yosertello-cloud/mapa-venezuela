@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapa de Venezuela Interactivo</title>
+    <style>
+        .contenedor {
+            display: flex;            /* Activa el modo de caja flexible */
+            justify-content: center;   /* Centra horizontalmente */
+            align-items: center;       /* Centra verticalmente (si el padre tiene altura) */
+            min-height: 100vh;        /* Hace que el contenedor ocupe todo el alto de la pantalla */
+            background-color: #f0f0f0; /* Opcional: un fondo gris claro para resaltar el mapa */
+            padding: 20px;
+        }
+
+        #mapaBase {
+            max-width: 100%;          /* Evita que el mapa se salga en pantallas pequeñas */
+            height: auto;             /* Mantiene la proporción */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); /* Un toque de sombra para que se vea mejor */
+            border-radius: 8px;
+        }
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; }
+        area { cursor: pointer; }
+        
+        /* Estilo del zoom/modal */
+        #visor { 
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.9); 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 1000;
+            overflow: hidden; /* Evita barras de scroll raras al ampliar */
+        }
+
+        #visor img { 
+            width: 500px; /* Tamaño base del zoom */
+            max-width: 90vw; 
+            max-height: 85vh;
+            border: 5px solid white;
+            transition: transform 0.3s ease; /* Hace que el segundo zoom sea suave */
+            cursor: zoom-in; /* Indica que se puede ampliar más */
+        }
+
+        /* Clase que aplicaremos con JavaScript para el segundo zoom */
+        #visor img.zoom-extra {
+            transform: scale(2); /* Duplica el tamaño actual */
+            cursor: zoom-out;    /* Indica que se puede achicar */
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Mapa de Venezuela Interactivo</h2>
+
+    <div class="contenedor" >
+        <img src="grande-mapa-politico-y-administrativo-de-venezuela.jpg" usemap="#venezuela-map" id="mapaBase" >
+        
+        <map name="venezuela-map">
+            <area shape="poly" coords="210,75,150,90,105,150,45,210,45,315,15,345,75,360,105,405,150,405,270,315,255,315,240,300,240,285,270,285,285,255,285,210,210,150,165,150,150,120" alt="Zulia" onclick="mostrarZoom('map est/Zulia.png')" title="Zulia">
+            <area shape="poly" coords="200,110,250,380,190,385,160,200,200,110" alt="Falcón" onclick="mostrarZoom('map est/Falcon.png')" title="Falcón">
+        </map>
+    </div>
+
+    <div id="visor" onclick="cerrarVisor()">
+        <div class="lupa-frame" onclick="event.stopPropagation()">
+            <img id="imagenZoom" src="" ondblclick="window.open(this.src, '_blank')" title="Doble clic para abrir imagen completa">
+        </div>
+    </div>
+
+    <script>
+        const img = document.getElementById('imagenZoom');
+        const visor = document.getElementById('visor');
+        const frame = document.querySelector('.lupa-frame');
+
+        function mostrarZoom(ruta) {
+            img.src = ruta;
+            img.style.transform = "scale(1)"; 
+            visor.style.display = 'flex';
+        }
+
+        // LÓGICA DE LUPA
+        frame.onmousemove = function(e) {
+            const rect = frame.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            img.style.transformOrigin = `${x}% ${y}%`;
+            img.style.transform = "scale(2.5)"; 
+        };
+
+        frame.onmouseleave = function() {
+            img.style.transform = "scale(1)";
+            img.style.transformOrigin = "center";
+        };
+
+        function cerrarVisor() {
+            visor.style.display = 'none';
+        }
+        img.ondblclick = function() {
+            // Abrimos una nueva página pasando la ruta de la imagen como "parámetro"
+            window.open('lupa_detallada.html?img=' + encodeURIComponent(this.src), '_blank');
+        };
+    </script>
+
+</body>
+</html>
